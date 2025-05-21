@@ -6,6 +6,8 @@ import Register from "./pages/auth/Register";
 import { Routes, Route } from "react-router-dom";
 import UserParkings from "./pages/user/Parkings";
 import { ProtectedRoute } from "./components/security/ProtectedRoute";
+import AdminDashboardLayout from "./components/layouts/AdminDashboardLayout";
+import UserDashboardLayout from "./components/layouts/UserDashboardLayout";
 
 function App() {
     return (
@@ -14,18 +16,22 @@ function App() {
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
             <Route
-                path="/admin/parkings"
+                path="/admin"
                 element={
                     <ProtectedRoute>
-                        <Parkings />
+                        <AdminDashboardLayout>
+                            <Parkings />
+                        </AdminDashboardLayout>
                     </ProtectedRoute>
                 }
             />
             <Route
-                path="/user/parkings"
+                path="/user"
                 element={
                     <ProtectedRoute>
-                        <UserParkings />
+                        <UserDashboardLayout>
+                            <UserParkings />
+                        </UserDashboardLayout>
                     </ProtectedRoute>
                 }
             />
@@ -33,7 +39,9 @@ function App() {
                 path="/admin/reports"
                 element={
                     <ProtectedRoute>
-                        <Reports />
+                        <AdminDashboardLayout>
+                            <Reports />
+                        </AdminDashboardLayout>
                     </ProtectedRoute>
                 }
             />
@@ -41,7 +49,9 @@ function App() {
                 path="/admin/car-actions"
                 element={
                     <ProtectedRoute>
-                        <CarActions />
+                        <AdminDashboardLayout>
+                            <CarActions />
+                        </AdminDashboardLayout>
                     </ProtectedRoute>
                 }
             />
