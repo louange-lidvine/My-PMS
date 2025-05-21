@@ -143,19 +143,24 @@ router.post("/entry", carEntry)
 
 /**
  * @swagger
- * /api/cars/exit/{id}:
+ * /api/cars/exit:
  *   put:
  *     summary: Record a car exit
  *     tags: [Cars]
  *     security:
  *       - bearerAuth: []
- *     parameters:
- *       - in: path
- *         name: id
- *         schema:
- *           type: string
- *         required: true
- *         description: ID of the car
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - plateNumber
+ *             properties:
+ *               plateNumber:
+ *                 type: string
+ *                 description: The plate number of the car
  *     responses:
  *       200:
  *         description: Car exit recorded successfully
@@ -175,7 +180,8 @@ router.post("/entry", carEntry)
  *       500:
  *         description: Server error while recording car exit
  */
-router.put("/exit/:id", carExit)
+
+router.put("/exit", carExit)
 
 /**
  * @swagger

@@ -71,68 +71,79 @@ export const carEntry = async (req: Request, res: Response) => {
 }
 
 export const carExit = async (req: Request, res: Response) => {
-  try {
-    const { id } = req.params
+    try {
+        // Get plateNumber from the request (body or query)
+        const plateNumber = req.body.plateNumber || req.query.plateNumber;
 
-    // Find car
-    const car = await prisma.car.findUnique({
-      where: { id },
-      include: { parking: true },
-    })
+        if (!plateNumber) {
+            return res
+                .status(400)
+                .json({ message: "Plate number is required" });
+        }
 
-    if (!car) {
-      return res.status(404).json({ message: "Car not found" })
+        // Find the car by plate number
+        const car = await prisma.car.findFirst({
+            where: { plateNumber },
+            include: { parking: true },
+        });
+
+        if (!car) {
+            return res.status(404).json({ message: "Car not found" });
+        }
+
+        if (car.exitTime) {
+            return res.status(400).json({ message: "Car has already exited" });
+        }
+
+        // Calculate fee
+        const exitTime = new Date();
+        const entryTime = new Date(car.entryTime);
+        const hoursParked =
+            (exitTime.getTime() - entryTime.getTime()) / (1000 * 60 * 60);
+        const totalFee = Math.ceil(hoursParked) * car.parking.feePerHour;
+
+        // Update car with exit time and fee
+        const updatedCar = await prisma.car.update({
+            where: { id: car.id },
+            data: {
+                exitTime,
+                totalFee,
+            },
+            include: { parking: true },
+        });
+
+        // Update available slots in parking
+        await prisma.parking.update({
+            where: { code: car.parkingCode },
+            data: {
+                availableSlots: car.parking.availableSlots + 1,
+            },
+        });
+
+        // Build and send bill
+        const bill = {
+            billId: updatedCar.id,
+            plateNumber: updatedCar.plateNumber,
+            parkingName: updatedCar.parking.name,
+            entryTime: updatedCar.entryTime,
+            exitTime: updatedCar.exitTime,
+            hoursParked: Math.ceil(hoursParked),
+            feePerHour: updatedCar.parking.feePerHour,
+            totalFee: updatedCar.totalFee,
+        };
+
+        return res.status(200).json({
+            message: "Car exit recorded successfully",
+            bill,
+        });
+    } catch (error) {
+        console.error("Car exit error:", error);
+        res.status(500).json({
+            message: "Server error while recording car exit",
+        });
     }
+};
 
-    if (car.exitTime) {
-      return res.status(400).json({ message: "Car has already exited" })
-    }
-
-    // Calculate total fee
-    const exitTime = new Date()
-    const entryTime = new Date(car.entryTime)
-    const hoursParked = (exitTime.getTime() - entryTime.getTime()) / (1000 * 60 * 60)
-    const totalFee = Math.ceil(hoursParked) * car.parking.feePerHour
-
-    // Update car record
-    const updatedCar = await prisma.car.update({
-      where: { id },
-      data: {
-        exitTime,
-        totalFee,
-      },
-      include: { parking: true },
-    })
-
-    // Update available slots
-    await prisma.parking.update({
-      where: { code: car.parkingCode },
-      data: {
-        availableSlots: car.parking.availableSlots + 1,
-      },
-    })
-
-    // Generate bill
-    const bill = {
-      billId: updatedCar.id,
-      plateNumber: updatedCar.plateNumber,
-      parkingName: updatedCar.parking.name,
-      entryTime: updatedCar.entryTime,
-      exitTime: updatedCar.exitTime,
-      hoursParked: Math.ceil(hoursParked),
-      feePerHour: updatedCar.parking.feePerHour,
-      totalFee: updatedCar.totalFee,
-    }
-
-    res.status(200).json({
-      message: "Car exit recorded successfully",
-      bill,
-    })
-  } catch (error) {
-    console.error("Car exit error:", error)
-    res.status(500).json({ message: "Server error while recording car exit" })
-  }
-}
 
 export const getActiveCars = async (req: Request, res: Response) => {
   try {
