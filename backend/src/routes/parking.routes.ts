@@ -1,14 +1,14 @@
-import express from "express"
+import express from "express";
 import {
-  createParking,
-  getAllParkings,
-  getParkingById,
-  updateParking,
-  deleteParking,
-} from "../controllers/parking.controller"
-import { isAdmin } from "../middleware/auth.middleware"
+    createParking,
+    getAllParkings,
+    getParkingById,
+    updateParking,
+    deleteParking,
+} from "../controllers/parking.controller";
+import { isAdmin } from "../middleware/auth.middleware";
 
-const router = express.Router()
+const router = express.Router();
 
 /**
  * @swagger
@@ -106,7 +106,7 @@ const router = express.Router()
  *       500:
  *         description: Server error while creating parking
  */
-router.post("/", isAdmin, createParking)
+router.post("/", isAdmin, createParking);
 
 /**
  * @swagger
@@ -128,7 +128,7 @@ router.post("/", isAdmin, createParking)
  *       500:
  *         description: Server error while fetching parkings
  */
-router.get("/", getAllParkings)
+router.get("/", getAllParkings);
 
 /**
  * @swagger
@@ -157,7 +157,7 @@ router.get("/", getAllParkings)
  *       500:
  *         description: Server error while fetching parking
  */
-router.get("/:id", getParkingById)
+router.get("/:id", getParkingById);
 
 /**
  * @swagger
@@ -211,7 +211,7 @@ router.get("/:id", getParkingById)
  *       500:
  *         description: Server error while updating parking
  */
-router.put("/:id", isAdmin, updateParking)
+router.put("/:id", isAdmin, updateParking);
 
 /**
  * @swagger
@@ -240,6 +240,6 @@ router.put("/:id", isAdmin, updateParking)
  *       500:
  *         description: Server error while deleting parking
  */
-router.delete("/:id", isAdmin, deleteParking)
+router.delete("/:id", isAdmin, deleteParking);
 
-export default router
+export default router;

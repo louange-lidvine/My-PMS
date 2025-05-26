@@ -1,5 +1,6 @@
 import express from "express"
-import { register, login } from "../controllers/auth.controller"
+import { register, login, getUser } from "../controllers/auth.controller"
+import { authenticateToken } from "../middleware/auth.middleware"
 
 const router = express.Router()
 
@@ -35,10 +36,6 @@ const router = express.Router()
  *                 type: string
  *                 format: password
  *                 description: User's password
- *               role:
- *                 type: string
- *                 enum: [ADMIN, USER]
- *                 description: User's role (defaults to USER if not provided)
  *     responses:
  *       201:
  *         description: User registered successfully
@@ -64,6 +61,9 @@ const router = express.Router()
  *                       type: string
  *                     role:
  *                       type: string
+ *                       enum: [USER, ADMIN]
+ *                       description: Role assigned to the user (defaults to USER)
+
  *       400:
  *         description: User already exists with this email
  *       500:
@@ -127,4 +127,45 @@ router.post("/register", register)
  */
 router.post("/login", login)
 
+// routes/user.routes.ts
+
+/**
+ * @swagger
+ * /api/users/me:
+ *   get:
+ *     summary: Get current logged-in user
+ *     tags: [Users]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Current user data
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 user:
+ *                   type: object
+ *                   properties:
+ *                     id:
+ *                       type: string
+ *                     firstName:
+ *                       type: string
+ *                     lastName:
+ *                       type: string
+ *                     email:
+ *                       type: string
+ *                     role:
+ *                       type: string
+ *       401:
+ *         description: Unauthorized
+ *       500:
+ *         description: Server error retrieving user
+ */
+router.get("/me", authenticateToken, getUser)
+
 export default router
+
+
+

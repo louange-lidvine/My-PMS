@@ -1,49 +1,55 @@
-import express from "express"
-import cors from "cors"
-import dotenv from "dotenv"
-import { PrismaClient } from "@prisma/client"
-import authRoutes from "./routes/auth.routes"
-import parkingRoutes from "./routes/parking.routes"
-import carRoutes from "./routes/car.routes"
-import reportRoutes from "./routes/report.routes"
-import { authenticateToken } from "./middleware/auth.middleware"
-import { setupSwagger } from "./swagger"
+import express from "express";
+import cors from "cors";
+import dotenv from "dotenv";
+import { PrismaClient } from "@prisma/client";
+import authRoutes from "./routes/auth.routes";
+import parkingRoutes from "./routes/parking.routes";
+import carRoutes from "./routes/car.routes";
+import userRoutes from "./routes/auth.routes";
+import reportRoutes from "./routes/report.routes";
+import { authenticateToken } from "./middleware/auth.middleware";
+import { setupSwagger } from "./swagger";
 
-import morgan from "morgan"
+import morgan from "morgan";
 
-dotenv.config()
+dotenv.config();
 
-const app = express()
-const prisma = new PrismaClient()
-const PORT = process.env.PORT || 5050
+const app = express();
+const prisma = new PrismaClient();
+const PORT = process.env.PORT || 5050;
 
 // Middleware
-app.use(cors())
-app.use(morgan('dev'))
-app.use(express.json())
+app.use(cors());
+app.use(morgan("dev"));
+app.use(express.json());
 
 // Setup Swagger
-setupSwagger(app)
+setupSwagger(app);
 
 // Routes
-app.use("/api/auth", authRoutes)
-app.use("/api/parking", authenticateToken, parkingRoutes)
-app.use("/api/cars", authenticateToken, carRoutes)
-app.use("/api/reports", authenticateToken, reportRoutes)
+app.use("/api/auth", authRoutes);
+
+app.use("/api/users", userRoutes);
+
+app.use("/api/parking", authenticateToken, parkingRoutes);
+app.use("/api/cars", authenticateToken, carRoutes);
+app.use("/api/reports", authenticateToken, reportRoutes);
 
 // Health check
 app.get("/health", (req, res) => {
-  res.status(200).json({ status: "ok" })
-})
+    res.status(200).json({ status: "ok" });
+});
 
 // Start server
 app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`)
-  console.log(`Swagger documentation available at http://localhost:${PORT}/api-docs`)
-})
+    console.log(`Server running on port ${PORT}`);
+    console.log(
+        `Swagger documentation available at http://localhost:${PORT}/api-docs`
+    );
+});
 
 // Handle shutdown
 process.on("SIGINT", async () => {
-  await prisma.$disconnect()
-  process.exit(0)
-})
+    await prisma.$disconnect();
+    process.exit(0);
+});
